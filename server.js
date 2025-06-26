@@ -51,18 +51,24 @@ app.use(express.json());
 app.use(
   session({
     // 암호화, 열쇠 역할을 하는 문자열 설정
+    secret: "session secret",
     // 요청이 들어왔을 때 변경되는 사항이 없는 경우 저장하지 않도록 설정
+    resave: false,
     // 요청이 들어왔을 때 내용이 비어있는 경우 저장하지 않도록 설정
+    saveUninitialized: false,
     // 쿠키 이름을 session_id로 변경
+    name: "session_id",
   })
 );
 
 // POST 요청 (로그인 요청시 보내는 메소드)
 app.post("/", (req, res) => {
   // 2️⃣. 요청 바디에서 전달받은 값을 구조분해 할당을 사용하여 관리하세요.
-  const {} = req.body;
+  const { userId, userPassword } = req.body;
   // 3️⃣. (find 메서드를 사용하여) users의 정보와 사용자가 입력한 정보를 비교하여 일치하는 회원이 존재하는지 확인하는 로직을 작성하세요.
-  const userInfo = users.find();
+  const userInfo = users.find(
+    (el) => el.user_id === userId && el.user_password === userPassword
+  );
 
   if (!userInfo) {
     res.status(401).send("로그인 실패");
@@ -83,7 +89,9 @@ app.get("/", (req, res) => {
 // DELETE 요청
 app.delete("/", (req, res) => {
   // 4️⃣. 세션 내 정보를 삭제하는 메소드를 작성하세요.
+  req.session.destroy();
   // 5️⃣. 쿠키를 삭제하는 메소드를 작성하세요.
+  res.clearCookie("session_id");
   res.send("🧹세션 삭제 완료");
 });
 
